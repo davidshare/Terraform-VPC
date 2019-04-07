@@ -1,0 +1,86 @@
+---
+- hosts: all
+  become: yes
+  become_method: sudo
+  remote_user: ubuntu
+  vars:
+    - ansible_python_interpreter: "/usr/bin/python3"
+    - repository: https://github.com/andela/selene-ah-backend.git
+    - app_dir: /home/ubuntu/selene-ah-backend
+    - sites_available: /etc/nginx/sites-available
+    - sites_enabled: /etc/nginx/sites-enabled"
+    - sites_available_config: /etc/nginx/sites-available/selene.conf
+    - sites_enabled_config: /etc/nginx/sites-enabled/selene.conf
+    - nginx_config: ./nginx_back.conf
+    - selene_service: ./selene_back.service
+  tasks:
+    - name: install nginx
+      apt:
+        name: nginx
+        update_cache: yes
+        state: present
+
+    - name: Remove nginx default file
+      file:
+        path: "{{sites_available}}/default"
+        state: absent
+
+    - name: Configure nginx
+      copy:
+        src: "{{nginx_config}}"
+        dest: "{{sites_available_config}}"
+
+    - name: Create nginx symlink
+      file:
+        src: "{{sites_available_config}}"
+        dest: "{{sites_enabled_config}}"
+        state: link
+
+    - name: Start nginx
+      service:
+        name: nginx
+        state: started
+
+    - name: Add gpg key for NodeJS LTS
+      apt_key:
+        url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+        state: present
+
+    - name: Install the NodeJS LTS repo
+      apt_repository:
+        repo: "deb https://deb.nodesource.com/node_10.x {{ ansible_distribution_release }} main"
+        state: present
+        update_cache: yes
+
+    - name: install nodejs
+      apt:
+        name: nodejs
+
+    - name: clone repository
+      git:
+        repo: "{{repository}}"
+        version: "{{repo_branch}}"
+        dest: "{{app_dir}}"
+
+    - name: Install node modules
+      shell: |
+        cd /home/ubuntu/selene-ah-backend
+        sudo npm audit fix --force --unsafe-perm=true
+        sudo npm install --unsafe-perm=true
+
+    - name: Create a service to run the app
+      copy:
+        src: ./packer/start.sh
+        dest: "{{app_dir}}"
+
+    - name: Create a service to run the app
+      copy:
+        src: "{{selene_service}}"
+        dest: /etc/systemd/system/selene.service
+
+    - name: Set the selene ah app to run on and restart on instance start
+      shell: |
+        sudo systemctl daemon-reload
+        sudo systemctl start selene.service
+        sudo systemctl enable selene.service
+
