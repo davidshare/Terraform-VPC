@@ -1,0 +1,14 @@
+[Unit]
+Description=Selene ah Service - Service to start the selene-ah backend app
+After=network.target
+
+[Service]
+ExecStart=/bin/bash /home/ubuntu/selene-ah-backend/start.sh
+Restart=on-failure
+Type=simple
+User=ubuntu
+
+[Install]
+WantedBy=multi-user.target
+
+

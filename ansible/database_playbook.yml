@@ -1,0 +1,78 @@
+---
+- hosts: all
+  become: yes
+  become_method: sudo
+  remote_user: ubuntu
+  vars:
+    - ansible_python_interpreter: "/usr/bin/python3"
+    - DB_USERNAME: "{{ lookup('env','DB_USERNAME') }}"
+    - DB_PASSWORD: "{{ lookup('env','DB_PASSWORD') }}"
+    - DATABASE_URL: "{{ lookup('env','DATABASE_URL') }}"
+    - DIALECT: "{{ lookup('env','DIALECT') }}"
+    - DB_TEST: "{{ lookup('env','DB_TEST') }}"
+    - DB_DEV: "{{ lookup('env','DB_DEV') }}"
+    - DB_PRODUCTION: "{{ lookup('env','DB_PRODUCTION') }}"
+    - DB_HOST: "{{ lookup('env','DB_HOST') }}"
+    - FACEBOOK_APP_ID: "{{ lookup('env','FACEBOOK_APP_ID') }}"
+    - FACEBOOK_APP_SECRET: "{{ lookup('env','FACE_APP_SERVICE') }}"
+    - SECRET: "{{ lookup('env','SECRET') }}"
+    - SENDGRID_API_KEY: "{{ lookup('env','SENDGRID_API_KEY') }}"
+    - GOOGLE_CLIENT_ID: "{{ lookup('env','GOOCLE_CLIENT_ID') }}"
+    - GOOGLE_CLIENT_SECRET: "{{ lookup('env','GOOGLE_CLIENT_SECRET') }}"
+    - TWITTER_CONSUMER_KEY: "{{ lookup('env','TWITTER_CONSUMER_KEY') }}"
+    - TWITTER_CONSUMER_SECRET: "{{ lookup('env','TWITTER_CONSUMER_SECRET') }}"
+    - TWITTER_CALLBACK_URL: "{{ lookup('env','TWITTER_CALLBACK_URL') }}"
+    - GOOGLE_CALLBACK_URL: "{{ lookup('env','GOOGLE_CALLBACK_URL') }}"
+    - USER_PROFILE_URL: "{{ lookup('env','USER_PROFILE_URL') }}"
+    - FACEBOOK_CALLBACK_URL: "{{ lookup('env','FACEBOOK_CALLBACK_URL') }}"
+    - VERIFYEMAIL_URL: "{{ lookup('env','VERIFYMAIL_URL') }}"
+    - UPDATEPASSWORD_URL: "{{ lookup('env','UPDATEPASSWORD_URL') }}"
+    - PUSHER_APP_ID: "{{ lookup('env','PUSHER_APP_ID') }}"
+    - PUSHER_APP_KEY: "{{ lookup('env','PUSHER_APP_KEY') }}"
+    - PUSHER_APP_SECRET: "{{ lookup('env','PUSHER_APP_SECRET') }}"
+    - PUSHER_APP_CLUSTER: "{{ lookup('env','PUSHER_APP_CLUSTER') }}"
+    - DB_NAME: "{{ lookup('env','DB_NAME') }}"
+  tasks:
+    - name: Install bash, OpenSSl, and libssl latest versions
+      apt: name={{ item }} update_cache=true state=latest
+      with_items:
+        - bash
+        - openssl
+        - libssl-dev
+        - libssl-doc
+      tags: packages
+
+    - name: Install PostgreSQL
+      apt: name={{ item }} update_cache=true state=installed
+      with_items:
+        - postgresql
+        - postgresql-contrib
+        - libpq-dev
+        - python3-psycopg2
+      tags: packages
+
+    - name: Start the postgreSQL service
+      service: name=postgresql state=started enabled=yes
+
+    - name: Create the database
+      sudo_user: postgres
+      postgresql_db: name={{ DB_NAME }}
+                encoding='UTF-8'
+                lc_collate='en_US.UTF-8'
+                lc_ctype='en_US.UTF-8'
+                template='template0'
+                state=present
+
+    - name: Grant priviledges to the user
+      sudo_user: postgres
+      postgresql_user: db={{ DB_USERNAME }}
+                  name={{ DB_USERNAME }}
+                  password={{ DB_PASSWORD }}
+                  priv=ALL
+                  state=present
+
+    - name: Limit user privileges
+      sudo_user: postgres
+      postgresql_user: name={{ DB_USERNAME }}
+                  role_attr_flags=NOSUPERUSER,NOCREATEDB
+                  state=present
