@@ -1,6 +1,7 @@
 # AWS VPC
 This code base demonstrates creating a VPC and subnets in AWS using [Terraform](https://www.terraform.io/), [Ansible](https://www.ansible.com/) and [Packer](https://www.packer.io/).
 ## Infrastructure
+![VPC diagram](AWS&#32;vpc.png)
 The Application creates an AWS VPC with the following:
 * 3 AMIs for the frontend, backend, and database instances.
 *	A VPC with 3 subnets
@@ -65,5 +66,10 @@ The Application creates an AWS VPC with the following:
 ### Deploying
 To deploy the application, navigate to the root directory of the cloned repository on the terminal and run `bash start.sh`
 ## Contributing
+- Clone the repository - `git clone https://github.com/davidshare/Terraform-VPC.git`
+- Follow the setup process above
+- Create a branch off the develop branch
+- Write your scripts and push to create a pull request
+- Your pull request will be reviewed and then merged
 
 
