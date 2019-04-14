@@ -1,6 +1,6 @@
 # Define webserver inside the public subnet
 resource "aws_instance" "frontend" {
-	ami = "${data.aws_ami.selene_front_ami.id}"
+	 ami = "${data.aws_ami.selene_front_ami.id}"
    instance_type = "${var.public_instance}"
    key_name = "${var.keypair}"
    subnet_id = "${aws_subnet.selene_front_subnet.id}"

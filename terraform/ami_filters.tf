@@ -3,7 +3,7 @@ data "aws_ami" "selene_front_ami" {
 	executable_users = ["self"]
 	filter {
 		name = "name"
-		values = ["selene_frontend"]
+		values = ["selene_front_ami"]
 	}
 	owners = ["self"]
 }
@@ -12,7 +12,7 @@ data "aws_ami" "selene_back_ami" {
 	executable_users = ["self"]
 	filter {
 		name = "name"
-		values = ["selene_backend"]
+		values = ["selene_back_ami"]
 	}
 	owners = ["self"]
 }
@@ -22,7 +22,7 @@ data "aws_ami" "selene_db_ami" {
 	executable_users = ["self"]
 	filter {
 		name = "name"
-		values = ["selene_db"]
+		values = ["selene_db_ami"]
 	}
 	owners = ["self"]
 }
